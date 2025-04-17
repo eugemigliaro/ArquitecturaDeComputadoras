@@ -3,7 +3,7 @@
 ;Luego de escribir la función, escriba un programa que la pruebe mostrando en pantalla el string al inicio y al final.
 
 section .data
-    cadena db "hola vos", 0
+    cadena db "hola como estás compañero", 0
     longitud equ $-cadena
 
 section .text
@@ -13,6 +13,8 @@ section .text
 main:
     push ebp
     mov ebp, esp
+    sub esp, 4
+    mov dword[ebp - 4], 0 ;contador
 
     mov eax, 4
     mov ebx, 1
@@ -23,12 +25,16 @@ main:
     pushad
     push cadena
     call capitalize
+    mov dword[ebp - 4], eax
     add esp, 4
     popad
+
+    mov eax, dword[ebp - 4]
 
     add eax, '0'        ;imprimo el contador de palabras
     mov [buffer], eax
 
+    pushad
     mov eax, 4
     mov ebx, 1
     mov ecx, buffer
@@ -40,7 +46,8 @@ main:
     mov ecx, cadena
     mov edx, longitud
     int 80h
-
+    popad
+    
     mov esp, ebp
     pop ebp
     ret
@@ -50,56 +57,44 @@ capitalize:
     mov ebp, esp
     mov eax, [ebp + 8]
     xor ecx, ecx
-    .must_to_upper:
-    inc ecx     ;estoy en palabra nueva
-    
+
+    mov dl, 1       ;marco como que el prev is_space
+
+    .loop:
+    cmp byte[eax], 0
+    je .end
+    ;guardo en dh si el current is_space
     push eax
-    call is_lower
-    mov edx, eax
+    call is_space
+    mov dh, al
     pop eax
+    ;if es el inicio de una palabra, pasar a mayúscula
+    cmp dl, 1
+    je .prev_is_space
+    jmp .not_new_word
+
+    .prev_is_space:
+    ;if [eax] is_space, no estoy en el inicio de una palabra, no llamo a new_word
+    cmp dh, 1
+    je .not_new_word
+    jmp .new_word
+
+    .not_new_word:
+    jmp .continue
     
-    cmp edx, 1
-    jne .after
+    .new_word:
+    inc ecx
     pushad
-    push eax    ;tengo que pasar a upper, es lower
+    push eax
     call to_upper
     add esp, 4
     popad
+    jmp .continue
 
-    .after:
+    .continue:
+    mov dl, dh      ;muevo el current a prev
     inc eax
-
-    pushad                  ;DEBUG
-    mov ecx, cadena
-    mov eax, 4
-    mov ebx, 1
-    mov edx, longitud
-    int 80h
-    popad
-
-    cmp byte[eax], 0
-    je .end
-    
-    push eax
-    call is_space
-    mov edx, eax
-    pop eax
-    
-    cmp edx, 1
-    jne .after
-    inc eax
-
-    pushad                  ;DEBUG
-    mov ecx, cadena
-    mov eax, 4
-    mov ebx, 1
-    mov edx, longitud
-    int 80h
-    popad
-
-    cmp byte[eax], 0
-    je .end
-    jmp .must_to_upper
+    jmp .loop
 
     .end:
     mov eax, ecx
@@ -114,8 +109,10 @@ is_space:
     cmp byte[eax], ' '
     jne .not
     mov eax, 1
+    jmp .return
     .not:
     mov eax, 0
+    .return:
     mov esp, ebp
     pop ebp
     ret
@@ -124,8 +121,17 @@ to_upper:
     push ebp
     mov ebp, esp
     mov eax, [ebp + 8]
-    mov ecx, [eax]
+    pushad
+    push eax
+    call is_lower
+    add esp, 4
+    cmp eax, 1
+    popad
+    jne .not_lower
+    ;llego acá, entonces es lower, la paso a upper
     sub byte[eax], 32
+
+    .not_lower:
     mov esp, ebp
     pop ebp
     ret
