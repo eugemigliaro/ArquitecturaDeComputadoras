@@ -23,7 +23,7 @@ main:
     ;ahora necesito validar que el segundo argumento sea un operador
 
     mov ecx, [ebp + 8] ;argc
-    cmp ecx, 3
+    cmp ecx, 4
     jl .error_cant_args
 
     mov eax, [ebp + 12] ; argv
