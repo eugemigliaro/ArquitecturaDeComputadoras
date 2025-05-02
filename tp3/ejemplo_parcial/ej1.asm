@@ -3,7 +3,7 @@
 ;Luego de escribir la función, escriba un programa que la pruebe mostrando en pantalla el string al inicio y al final.
 
 section .data
-    cadena db "hola como estás compañero", 0
+    cadena db "hola como         estás", 0
     longitud equ $-cadena
 
 section .text
