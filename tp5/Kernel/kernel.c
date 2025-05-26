@@ -105,7 +105,13 @@ int main()
 	}
 
 	Point point = {100, 100};
-	printChar(point, 'R', 0xFF0000);
+	printChar(point, 'A', 0xFF0000, "VGA8x16",20);
+
+	Point point2 = {300, 400};
+	printString(point2, "Hola colo", 0x008000, "VGA8x16", 5);
+
+	Point point3 = {300, 500};
+	printCharWorks(point3, 'B', 0x008000, 10);
 
 	ncPrint("[Finished]");
 	return 0;

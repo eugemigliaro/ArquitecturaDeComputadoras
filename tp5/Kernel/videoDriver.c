@@ -1,4 +1,5 @@
 #include <videoDriver.h>
+#include <fonts.h>
 #include <font_8x16.h>
 
 struct vbe_mode_info_structure {
@@ -51,12 +52,67 @@ void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
 }
 
-void printChar(Point topLeft, char c, uint32_t color){
+/* void printChar(Point topLeft, char c, uint32_t color, unsigned int font_size){
 	//put pixel para el char con el bitmap
-	for(int i = 0; i < CHAR_HEIGHT; i++){
-		for(int j = 0; j < CHAR_WIDTH; j++){
-			int condition = fontdata_8x16[c * 16 + i];
-			condition = condition & (1 << (CHAR_WIDTH - 1 - j));
+	for(int i = 0; i < CHAR_HEIGHT * font_size; i++){
+		for(int j = 0; j < CHAR_WIDTH * font_size; j++){
+			int condition = fontdata_8x16[c * 16 + i / font_size];
+			condition = condition & (1 << (CHAR_WIDTH - 1 - j / font_size));
+			if(condition){
+				putPixel(color, topLeft.x + j, topLeft.y + i);
+			}
+		}
+	}
+
+	return;
+}
+
+void printString(Point topLeft, char *string, uint32_t color, unsigned int font_size){
+	int i = 0;
+	while(string[i] != 0){
+		printChar(topLeft, string[i], color, font_size);
+		topLeft.x += CHAR_WIDTH * font_size;
+		i++;
+	}
+} */
+
+void printChar(Point topLeft, char c, uint32_t color, char *font_name, unsigned int font_size){
+
+	const struct font_desc *desc = find_font(font_name);
+    if(desc == 0){
+        return;
+    }
+
+	//put pixel para el char con el bitmap
+	for(int i = 0; i < desc->height * font_size; i++){
+		for(int j = 0; j < desc->width * font_size; j++){
+			int condition = desc->data[c * desc->height + i / font_size];
+			condition = condition & (1 << (desc->width - 1 - j / font_size));
+			if(condition){
+				putPixel(color, topLeft.x + j, topLeft.y + i);
+			}
+		}
+	}
+
+	return;
+}
+
+void printString(Point topLeft, char *string, uint32_t color, char *font_name, unsigned int font_size){
+	int i = 0;
+	while(string[i] != 0){
+		printChar(topLeft, string[i], color, font_name, font_size);
+		const struct font_desc *desc = find_font(font_name);
+		topLeft.x += desc->width * font_size;
+		i++;
+	}
+}
+
+void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_size){
+	//put pixel para el char con el bitmap
+	for(int i = 0; i < CHAR_HEIGHT * font_size; i++){
+		for(int j = 0; j < CHAR_WIDTH * font_size; j++){
+			int condition = fontdata_8x16[c * 16 + i / font_size];
+			condition = condition & (1 << (CHAR_WIDTH - 1 - j / font_size));
 			if(condition){
 				putPixel(color, topLeft.x + j, topLeft.y + i);
 			}

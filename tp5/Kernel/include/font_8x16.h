@@ -1,11 +1,8 @@
-#ifndef FONT_8X16_H
-#define FONT_8X16_H
+#define FONTDATAMAX 4096
+#define CHAR_WIDTH 8
+#define CHAR_HEIGHT 16
 
-#define FONTWIDTH 8
-#define FONTHEIGHT 16
-#define FONTDATAMAX (256 * FONTHEIGHT)
-
-static const unsigned char fontdata_8x16[FONTDATAMAX] = {
+static const char fontdata_8x16[FONTDATAMAX] = {
 	/* 0 0x00 '^@' */
 	0x00, /* 00000000 */
 	0x00, /* 00000000 */
@@ -4614,5 +4611,3 @@ static const unsigned char fontdata_8x16[FONTDATAMAX] = {
 	0x00, /* 00000000 */
 	0x00, /* 00000000 */
 };
-
-#endif
