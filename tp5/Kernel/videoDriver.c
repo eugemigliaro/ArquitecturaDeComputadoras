@@ -2,6 +2,8 @@
 #include <fonts.h>
 #include <font_8x16.h>
 
+static Point cursorPos = {0 + X_MARGIN, 0 + Y_MARGIN};
+
 struct vbe_mode_info_structure {
 	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
 	uint8_t window_a;			// deprecated
@@ -44,6 +46,12 @@ typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
 VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
 
+unsigned int isValidX(uint64_t x);
+unsigned int isValidY(uint64_t y);
+
+void resetX();
+void resetY();
+
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
     uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
@@ -52,36 +60,9 @@ void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
 }
 
-/* void printChar(Point topLeft, char c, uint32_t color, unsigned int font_size){
-	//put pixel para el char con el bitmap
-	for(int i = 0; i < CHAR_HEIGHT * font_size; i++){
-		for(int j = 0; j < CHAR_WIDTH * font_size; j++){
-			int condition = fontdata_8x16[c * 16 + i / font_size];
-			condition = condition & (1 << (CHAR_WIDTH - 1 - j / font_size));
-			if(condition){
-				putPixel(color, topLeft.x + j, topLeft.y + i);
-			}
-		}
-	}
 
-	return;
-}
 
-void printString(Point topLeft, char *string, uint32_t color, unsigned int font_size){
-	int i = 0;
-	while(string[i] != 0){
-		printChar(topLeft, string[i], color, font_size);
-		topLeft.x += CHAR_WIDTH * font_size;
-		i++;
-	}
-} */
-
-void printChar(Point topLeft, char c, uint32_t color, char *font_name, unsigned int font_size){
-
-	const struct font_desc *desc = find_font(font_name);
-    if(desc == 0){
-        return;
-    }
+void drawChar(Point topLeft, char c, uint32_t color, const struct font_desc *desc, unsigned int font_size){
 
 	//put pixel para el char con el bitmap
 	for(int i = 0; i < desc->height * font_size; i++){
@@ -98,16 +79,16 @@ void printChar(Point topLeft, char c, uint32_t color, char *font_name, unsigned 
 }
 
 void printString(Point topLeft, char *string, uint32_t color, char *font_name, unsigned int font_size){
+	const struct font_desc *desc = find_font(font_name);
 	int i = 0;
 	while(string[i] != 0){
-		printChar(topLeft, string[i], color, font_name, font_size);
-		const struct font_desc *desc = find_font(font_name);
+		drawChar(topLeft, string[i], color, desc, font_size);
 		topLeft.x += desc->width * font_size;
 		i++;
 	}
 }
 
-void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_size){
+/* void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_size){
 	//put pixel para el char con el bitmap
 	for(int i = 0; i < CHAR_HEIGHT * font_size; i++){
 		for(int j = 0; j < CHAR_WIDTH * font_size; j++){
@@ -120,4 +101,60 @@ void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_siz
 	}
 
 	return;
+} */
+
+uint64_t putChar(char c, uint32_t color, char *font_name, unsigned int font_size){
+
+	const struct font_desc *desc = find_font(font_name);
+	drawChar(cursorPos, c, color, desc, font_size);
+	cursorPos.x += desc->width * font_size;
+
+	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
+		resetCursor_x();
+		cursorPos.y += desc->height * font_size;
+		if(isValidY(cursorPos.y + desc->height * font_size) == 0){
+			resetCursor_y();
+		}
+	}
+
+	return 1;
+}
+
+uint64_t putString(const char *string, uint32_t color, char *font_name, unsigned int font_size){
+	int i = 0;
+	while(string[i] != 0){
+		putChar(string[i], color, font_name, font_size);
+		i++;
+	}
+	return 1;
+}
+
+uint64_t putNString(const char *string, uint32_t color, char *font_name, unsigned int font_size, uint64_t n){
+	uint64_t res = 0;
+	int i = 0;
+	while(string[i] != 0 && i < n){
+		res += putChar(string[i], color, font_name, font_size);
+		i++;
+	}
+	return res;
+}
+
+void resetCursor_x(){
+	cursorPos.x = 0 + X_MARGIN;
+}
+
+void resetCursor_y(){
+	cursorPos.y = 0 + Y_MARGIN;
+}
+
+unsigned int isValidX(uint64_t x){
+	if(x > (DIM_X - X_MARGIN) || x < X_MARGIN)
+		return 0;
+	return 1;
+}
+
+unsigned int isValidY(uint64_t y){
+	if(y > (DIM_Y - Y_MARGIN) || y < Y_MARGIN)
+		return 0;
+	return 1;
 }

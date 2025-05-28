@@ -4,6 +4,7 @@
 #include <moduleLoader.h>
 #include <naiveConsole.h>
 #include "videoDriver.h"
+#include "syscall_handler.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -100,19 +101,18 @@ int main()
 	ncPrint((char*)sampleDataModuleAddress);
 	ncNewline();
 
+	ncPrint("[Finished]");
+	
 	for(int i = 0; i < 1000; i++){
 		putPixel(0xFF0000, i, i);
 	}
 
-	Point point = {100, 100};
-	printChar(point, 'A', 0xFF0000, "VGA8x16",20);
-
 	Point point2 = {300, 400};
-	printString(point2, "Hola colo", 0x008000, "VGA8x16", 5);
+	printString(point2, "Hola codlo", 0x008000, "VGA8x16", 5);
 
-	Point point3 = {300, 500};
-	printCharWorks(point3, 'B', 0x008000, 10);
+	
 
-	ncPrint("[Finished]");
+	putNString("Hello World, my name is Eugenio", 0xFF0000, "VGA8x16", 10, 300);
+
 	return 0;
 }
