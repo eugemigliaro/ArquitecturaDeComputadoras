@@ -19,23 +19,23 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
 }
 
 uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
-    uint32_t color;
+    uint32_t default_color;
     char *default_font = "VGA8x16";
-    unsigned int default_font_size = 8;
+    unsigned int default_font_size = 2;
     switch(fd){
         case(STDOUT):
-            color = 0x00FF00;
+            default_color = 0xFFFFFF;
             break;
         case(STDIN):
-            color = 0x0000FF;
+            default_color = 0xFFFFFF;
             break;
         case(STDERR):
-            color = 0xFF0000;
+            default_color = 0xFF0000;
             break;
         default:
-            color = 0x000000;
+            default_color = 0xFF0000;
             break;
     }
 
-    return putNString(buf, color, default_font, default_font_size, count);
+    return putNString(buf, default_color, default_font, default_font_size, count);
 }

@@ -84,35 +84,9 @@ void * initializeKernelBinary()
 
 int main()
 {	
-	ncPrint("[Kernel Main]");
-	ncNewline();
-	ncPrint("  Sample code module at 0x");
-	ncPrintHex((uint64_t)sampleCodeModuleAddress);
-	ncNewline();
-	ncPrint("  Calling the sample code module returned: ");
-	ncPrintHex(((EntryPoint)sampleCodeModuleAddress)());
-	ncNewline();
-	ncNewline();
+	load_idt();
 
-	ncPrint("  Sample data module at 0x");
-	ncPrintHex((uint64_t)sampleDataModuleAddress);
-	ncNewline();
-	ncPrint("  Sample data module contents: ");
-	ncPrint((char*)sampleDataModuleAddress);
-	ncNewline();
-
-	ncPrint("[Finished]");
-	
-	for(int i = 0; i < 1000; i++){
-		putPixel(0xFF0000, i, i);
-	}
-
-	Point point2 = {300, 400};
-	printString(point2, "Hola codlo", 0x008000, "VGA8x16", 5);
-
-	
-
-	putNString("Hello World, my name is Eugenio", 0xFF0000, "VGA8x16", 10, 300);
+	((EntryPoint)sampleCodeModuleAddress)();
 
 	return 0;
 }

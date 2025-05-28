@@ -1,6 +1,12 @@
-GLOBAL sys_write
+GLOBAL sys_call
+section .text
 
-sys_write:
-    mov rax, 0x03
+; syscall handler
+sys_call:
+    mov rax, rdi        ; syscall number
+    mov rdi, rsi        ; arg1
+    mov rsi, rdx        ; arg2
+    mov rdx, rcx        ; arg3
+    mov r10, r8         ; arg4
     int 0x80
     ret
